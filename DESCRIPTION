@@ -6,7 +6,7 @@ Authors@R:
            family = "Croll",
            role = c("aut", "cre"),
            email = "J.C.Croll@uva.nl")
-Description: This package fits a Von Bertalanffy growth curve with varying asymptotic size on samples with age-size structure data.  The population structure assumes individuals follow a Von Bertalanffy growth curve in which the asymptotic size constant over time or varies between timepoints. The population structure is fitted using a maximum likelihood method. Area addition
+Description: This package fits a Von Bertalanffy growth curve with varying asymptotic size on samples with age-size structure data.  The population structure assumes individuals follow a Von Bertalanffy growth curve in which the asymptotic size constant over time or varies between timepoints. The population structure is fitted using a maximum likelihood method.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
