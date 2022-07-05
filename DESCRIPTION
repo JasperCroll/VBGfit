@@ -1,0 +1,17 @@
+Package: VBGfit
+Title: fit a population structure on a samples with age-size data
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Jasper",
+           family = "Croll",
+           role = c("aut", "cre"),
+           email = "J.C.Croll@uva.nl")
+Description: This package fits a Von Bertalanffy growth curve with varying asymptotic size on samples with age-size structure data.  The population structure assumes individuals follow a Von Bertalanffy growth curve in which the asymptotic size constant over time or varies between timepoints. The population structure is fitted using a maximum likelihood method. Area addition
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    ArgumentCheck,
+    nloptr
