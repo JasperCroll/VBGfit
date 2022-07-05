@@ -1,6 +1,5 @@
 # VBGfit package
-# 15 march 2022
-# latest version on https://bitbucket.org/JCroll/vbgfit/
+# 5 july 2022
 
 #' Make parameter vector defining the population stucture
 #'
@@ -53,99 +52,71 @@ makepoppars <- function(fRlm_avg, fRlm_var, len0_avg, len0_var, rB, time0_avg=NU
 # Check and process input -------------------------------------------------
 
   #### Check input
-  inputCheck <- ArgumentCheck::newArgCheck()
 
   # check modeltype
   if(model != "CONS" && model != "VARY" && model != "BOTH"){
-    ArgumentCheck::addWarning(
-      msg = "model is not one of 'CONS', 'VARY' or 'BOTH', and is reset to default: 'BOTH'",
-      argcheck = inputCheck)
+    warning("model is not one of 'CONS', 'VARY' or 'BOTH', and is reset to default: 'BOTH'")
     model = "BOTH"
   }
 
   # check ntime
   if(is.null(ntime) && length(fRlm_avg) == 0 &&  length(fRlm_var) == 0 &&  length(len0_avg) == 1 &&  length(len0_var) == 1 ){
-    ArgumentCheck::addError(
-      msg = "ntime is missing and number of timepoints could not be derived. ",
-      argcheck = inputCheck)
+    stop("ntime is missing and number of timepoints could not be derived. ")
   }
   else if(is.null(ntime)){
     ntimeoptions <- c(length(fRlm_avg)/ngroups+1, length(fRlm_var)/ngroups+1, length(fRlm_avg)+1, length(fRlm_var)+1, length(len0_avg), length(len0_var))
     if(sum((ntimeoptions>=2 && ntimeoptions%%1==0)) == 0){
-      ArgumentCheck::addError(
-        msg = "ntime is missing and number of timepoints could not be derived. ",
-        argcheck = inputCheck)
+      stop( "ntime is missing and number of timepoints could not be derived. ")
     }
     else{
     ntime <- min( ntimeoptions[which(ntimeoptions>=2 && ntimeoptions%%1==0)], na.rm = TRUE )
-    ArgumentCheck::addWarning(
-      msg = paste("ntime is set to",as.character(ntime),"based on the shortest length of the vectors with fRlm_avg, fRlm_var, time0_avg and time0_var"),
-      argcheck = inputCheck)
+    warning(paste("ntime is set to",as.character(ntime),"based on the shortest length of the vectors with fRlm_avg, fRlm_var, time0_avg and time0_var"))
     }
   }
 
   #check nages
   if(is.null(nages) && is.null(time0_avg) &&  is.null(time0_var)  ){
-    ArgumentCheck::addError(
-      msg = "nages is missing and number of ages could not be derived. ",
-      argcheck = inputCheck)
+    stop("nages is missing and number of ages could not be derived. ")
     }
   else if(is.null(nages)){
     nagesoptions <- c(length(time0_avg)+1, length(time0_var)+1)
     nages <- min( nagesoptions[which(nagesoptions>=2)] )
-    ArgumentCheck::addWarning(
-      msg = paste("nages is set to",as.character(nages),"based on the shortest length of the vectors with time0_avg and time0_var"),
-      argcheck = inputCheck)
+    warning(paste("nages is set to",as.character(nages),"based on the shortest length of the vectors with time0_avg and time0_var"))
   }
 
   #check len0_avg
   if(length(len0_avg) > ntime){
-    ArgumentCheck::addWarning(
-      msg = paste("too many elements in len0_avg, only the first", as.character(ntime), "elements used"),
-      argcheck = inputCheck)
+    warning(paste("too many elements in len0_avg, only the first", as.character(ntime), "elements used"))
     len0_avg <- len0_avg[1:(ntime)]
   }
 
   #check len0_var
   if(length(len0_var) > ntime){
-    ArgumentCheck::addWarning(
-      msg = paste("too many elements in len0_var, only the first", as.character(ntime), "elements used"),
-      argcheck = inputCheck
-    )
+    warning(paste("too many elements in len0_var, only the first", as.character(ntime), "elements used"))
     len0_var <- len0_var[1:(ntime)]
   }
 
   # check time0_avg
   if(length(time0_avg) > ntime-1){
-    ArgumentCheck::addWarning(
-      msg = paste("too many elements in time0_avg, only the first", as.character(nages-1), "elements used"),
-      argcheck = inputCheck
-    )
+    warning(paste("too many elements in time0_avg, only the first", as.character(nages-1), "elements used"))
     time0_avg <- time0_avg[1:(nages-1)]
   }
 
   # check time0_var
   if(length(time0_var) > ntime-1){
-    ArgumentCheck::addWarning(
-      msg = paste("too many elements in time0_var, only the first", as.character(nages-1), "elements used"),
-      argcheck = inputCheck)
+    warning( paste("too many elements in time0_var, only the first", as.character(nages-1), "elements used"))
     time0_var <- time0_var[1:(nages-1)]
   }
-
-  ArgumentCheck::finishArgCheck(inputCheck)
 
 
 # Calculate further arguments -------------------------------------------------
 
-  processCheck <- ArgumentCheck::newArgCheck()
 
   # Calculate estimate of size at age at time 0
   if(is.null(time0_avg)){
     time0_avg <- len0_avg[1] * exp(-rB*seq(1, nages-1, 1 )) + fRlm_avg[1]*(1-exp(-rB*seq(1, nages-1, 1 )))
     if(ngroups > 1){
-      ArgumentCheck::addWarning(
-        msg = "not accounted for feeding groups when calculating the size at age at the first timepoint",
-        argcheck = processCheck)
+      message("not accounted for feeding groups when calculating the size at age at the first timepoint")
     }
   }
 
@@ -153,9 +124,7 @@ makepoppars <- function(fRlm_avg, fRlm_var, len0_avg, len0_var, rB, time0_avg=NU
   if(is.null(time0_var)){
     time0_var <- len0_var[1] * exp(-2*rB*seq(1, nages-1, 1 )) + fRlm_var[1]*(1-exp(-rB*seq(1, nages-1, 1 )))^2
     if(ngroups > 1){
-      ArgumentCheck::addWarning(
-        msg = "not accounted for feeding groups when calculating the variance in size at age at the first timepoint",
-        argcheck = processCheck)
+      message("not accounted for feeding groups when calculating the variance in size at age at the first timepoint")
     }
   }
 
@@ -167,18 +136,14 @@ makepoppars <- function(fRlm_avg, fRlm_var, len0_avg, len0_var, rB, time0_avg=NU
   # further calculations
   if(model == "CONS" || model == "BOTH"){
     if(length(fRlm_avg) > ngroups){
-      ArgumentCheck::addWarning(
-        msg = paste("too many elements in fRlm_avg for constant feedinglevel, only the first", as.character(ngroups), "elements used"),
-        argcheck = processCheck)
+      warning(paste("too many elements in fRlm_avg for constant feedinglevel, only the first", as.character(ngroups), "elements used"))
       fRlm_avg_CONS <- fRlm_avg[1:ngroups]
     }
     else if(length(fRlm_avg) == ngroups){
       fRlm_avg_CONS <- fRlm_avg
     }
     else if(length(fRlm_avg) < ngroups && length(fRlm_avg) > 1){
-      ArgumentCheck::addWarning(
-        msg = "too many elements in fRlm_avg for constant feedinglevel, only the first elements is used",
-        argcheck = processCheck)
+      warning("too many elements in fRlm_avg for constant feedinglevel, only the first elements is used")
       fRlm_avg_CONS <- rep(fRlm_avg[1], ngroups)
     }
     else{
@@ -186,16 +151,12 @@ makepoppars <- function(fRlm_avg, fRlm_var, len0_avg, len0_var, rB, time0_avg=NU
     }
 
     if(length(fRlm_var) > ngroups){
-      ArgumentCheck::addWarning(
-        msg = paste("too many elements in fRlm_var for constant feedinglevel, only the first", as.character(ngroups), "elements used"),
-        argcheck = processCheck)
+      warning(paste("too many elements in fRlm_var for constant feedinglevel, only the first", as.character(ngroups), "elements used"))
       fRlm_var_CONS <- fRlm_var[1:ngroups]
     }
     else if(length(fRlm_var) == ngroups) fRlm_var_CONS <- fRlm_var
     else if(length(fRlm_var) < ngroups && length(fRlm_var) > 1){
-      ArgumentCheck::addWarning(
-        msg = "too many elements in fRlm_var for constant feedinglevel, only the first elements is used",
-        argcheck = processCheck)
+      warning("too many elements in fRlm_var for constant feedinglevel, only the first elements is used")
       fRlm_var_CONS <- rep(fRlm_var[1], ngroups)
     }
     else fRlm_var_CONS <- rep(fRlm_var[1], ngroups)
@@ -205,9 +166,7 @@ makepoppars <- function(fRlm_avg, fRlm_var, len0_avg, len0_var, rB, time0_avg=NU
 
   if(model == "VARY" || model == "BOTH"){
     if(length(fRlm_avg) > ngroups*(ntime - 1)){
-      ArgumentCheck::addWarning(
-        msg = paste("too many elements in fRlm_avg for varying feedinglevel, only the first", as.character(ngroups*(ntime -1)), "elements used"),
-        argcheck = processCheck)
+      warning(paste("too many elements in fRlm_avg for varying feedinglevel, only the first", as.character(ngroups*(ntime -1)), "elements used"))
       fRlm_avg_VARY <- fRlm_avg[1:(ngroups*(ntime - 1))]
     }
     else if(length(fRlm_avg) == ngroups*(ntime - 1)) fRlm_avg_VARY <- fRlm_avg
@@ -217,17 +176,13 @@ makepoppars <- function(fRlm_avg, fRlm_var, len0_avg, len0_var, rB, time0_avg=NU
       for(i in 1:(ngroups)) fRlm_avg_VARY <- c(fRlm_avg_VARY, rep(fRlm_avg[i], (ntime-1)))
     }
     else if(length(fRlm_avg) > 1){
-      ArgumentCheck::addWarning(
-        msg = "Number of elements in fRlm_avg does not match the number of needed elements for varying feeding level, only the first element is used.",
-        argcheck = processCheck)
+      warning("Number of elements in fRlm_avg does not match the number of needed elements for varying feeding level, only the first element is used.")
       fRlm_avg_VARY <- rep(fRlm_avg[1],ngroups*(ntime-1))
     }
     else fRlm_avg_VARY <- rep(fRlm_avg[1],ngroups*(ntime-1))
 
     if(length(fRlm_var) > ngroups*(ntime - 1)){
-      ArgumentCheck::addWarning(
-        msg = paste("too many elements in fRlm_var for varying feedinglevel, only the first", as.character(ngroups*(ntime -1)), "elements used"),
-        argcheck = processCheck)
+      warning( paste("too many elements in fRlm_var for varying feedinglevel, only the first", as.character(ngroups*(ntime -1)), "elements used"))
       fRlm_var_VARY <- fRlm_var[1:(ngroups*(ntime - 1))]
     }
     else if(length(fRlm_var) == ngroups*(ntime - 1)) fRlm_var_VARY <- fRlm_var
@@ -237,17 +192,13 @@ makepoppars <- function(fRlm_avg, fRlm_var, len0_avg, len0_var, rB, time0_avg=NU
       for(i in 1:(ngroups)) fRlm_var_VARY <- c(fRlm_var_VARY, rep(fRlm_var[i], (ntime-1)))
     }
     else if(length(fRlm_var) > 1){
-      ArgumentCheck::addWarning(
-        msg = "Number of elements in fRlm_var does not match the number of needed elements for varying feeding level, only the first element is used.",
-        argcheck = processCheck)
+      warning("Number of elements in fRlm_var does not match the number of needed elements for varying feeding level, only the first element is used.")
       fRlm_var_VARY <- rep(fRlm_var[1],ngroups*(ntime-1))
     }
     else fRlm_var_VARY <- rep(fRlm_var[1],ngroups*(ntime-1))
 
     poppars_VARY = c(fRlm_avg_VARY, fRlm_var_VARY, len0_avg, len0_var, time0_avg, time0_var, rB)
   }
-
-  ArgumentCheck::finishArgCheck(processCheck)
 
   # return values
 

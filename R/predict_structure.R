@@ -1,6 +1,5 @@
 # VBGfit package
-# 15 march 2022
-# latest version on https://bitbucket.org/JCroll/vbgfit/
+# 5 july 2022
 
 
 #'  Calculate the population structure for a given parameterset
@@ -48,21 +47,16 @@ predict_structure <- function(initpars, ntime, nages, mintime = 0, minage = 0, m
 # Check and process input -------------------------------------------------
 
   #### Check input
-  inputCheck <- ArgumentCheck::newArgCheck()
 
   # check modeltype
   if(model != "CONS" && model != "VARY" && model != "BOTH"){
-    ArgumentCheck::addWarning(
-      msg = "model is not one of 'CONS', 'VARY' or 'BOTH', and is reset to default: 'BOTH'",
-      argcheck = inputCheck)
+    warning("model is not one of 'CONS', 'VARY' or 'BOTH', and is reset to default: 'BOTH'")
     model = "BOTH"
   }
 
   # check shrink
   if( shrink !=TRUE && shrink !=FALSE ){
-    ArgumentCheck::addWarning(
-      msg = "shrink should be TRUE or FALSE, set to TRUE",
-      argcheck = inputCheck)
+    warning("shrink should be TRUE or FALSE, set to TRUE")
     shrink = TRUE
   }
   # convert shrink to integer
@@ -74,9 +68,7 @@ predict_structure <- function(initpars, ntime, nages, mintime = 0, minage = 0, m
   else if( feedinggroups == "AGE") grouppar = 1
   else if( feedinggroups == "SIZE") grouppar = 2
   else{
-    ArgumentCheck::addWarning(
-      msg = "Feedinggroups is not one of 'AGE' or 'SIZE' and is ignored",
-      argcheck = inputCheck)
+    warning("Feedinggroups is not one of 'AGE' or 'SIZE' and is ignored")
     grouppar = 0
   }
 
@@ -85,16 +77,13 @@ predict_structure <- function(initpars, ntime, nages, mintime = 0, minage = 0, m
     feedingbounds <- unique(feedingbounds[!is.na(feedingbounds)])
     ngroups <- length(feedingbounds)+1
     if(ngroups == 1){
-      ArgumentCheck::addWarning(
-        msg = "No correct boundaries for feedinggroups found. Feedinggroups ignored",
-        argcheck = inputCheck)
+      warning(
+        msg = "No correct boundaries for feedinggroups found. Feedinggroups ignored")
       grouppar = 0
       feedingbounds = 0
     }
     else{
-      ArgumentCheck::addWarning(
-        msg = paste(as.character(ngroups-1),"unique boundaries of feedinggroups found, continuing with",as.character(ngroups),"feedinggroups"),
-        argcheck = inputCheck)
+      message(paste(as.character(ngroups-1),"unique boundaries of feedinggroups found, continuing with",as.character(ngroups),"feedinggroups"))
     }
   }
   else{
@@ -106,40 +95,28 @@ predict_structure <- function(initpars, ntime, nages, mintime = 0, minage = 0, m
   npars <- length(initpars)
 
   if(anyNA(initpars)){
-    ArgumentCheck::addError(
-      msg = "NA values are not allowed in initpars",
-      argcheck = inputCheck)
+    stop("NA values are not allowed in initpars")
   }
   else if( (npars == 2*ngroups + 2*ntime + 2*(nages-1) + 1 ) ){
-    ArgumentCheck::addWarning(
-      msg = "Model set to 'CONS' based on length of initpars",
-      argcheck = inputCheck)
+    warning( "Model set to 'CONS' based on length of initpars")
     model = "CONS"
     modeltype <- as.integer(0)
   }
   else if(npars == 2*(ntime-1)*ngroups + 2*ntime + 2*(nages-1) + 1 ){
-    ArgumentCheck::addWarning(
-      msg = "Model set to 'VARY' based on length of initpars",
-      argcheck = inputCheck)
+    warning("Model set to 'VARY' based on length of initpars")
     model = "VARY"
     modeltype <- as.integer(1)
   }
   else if(npars == 5){
-    ArgumentCheck::addWarning(
-      msg = "Model set to 'CONS' based on length of initpars",
-      argcheck = inputCheck)
+    warning( "Model set to 'CONS' based on length of initpars")
     model = "CONS"
     modeltype <- as.integer(0)
     initpars <- makepoppars(fRlm_avg = initpars[1], fRlm_var = initpars[2], len0_avg = initpars[3], len0_var = initpars[4], rB = initpars[5], time0_avg=NULL, time0_var=NULL, ntime = ntime, nages = nages,  model="CONS", ngroups = ngroups)
     npars = length(initpars)
   }
   else if( npars != 5 ){
-    ArgumentCheck::addError(
-      msg = "Size of initpars is incorrect. Initpars should be a vector of length 5 or a vector as produced by 'makepoppars()'",
-      argcheck = inputCheck)
+    stop("Size of initpars is incorrect. Initpars should be a vector of length 5 or a vector as produced by 'makepoppars()'")
   }
-
-  ArgumentCheck::finishArgCheck(inputCheck)
 
   # Calculate sturcture -------------------------------------------------
 
