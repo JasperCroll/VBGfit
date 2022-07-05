@@ -1,6 +1,5 @@
 # VBGfit package
-# 15 march 2022
-# latest version on https://bitbucket.org/JCroll/vbgfit/
+# 5 july 2022
 
 #' Calculate the negative log-likelyhood for a model with given parameters for the given dataset.
 #'
@@ -47,36 +46,27 @@ minLL_structure <- function(samples, ages=NA, sizes=NA, weights=NA, initpars, mo
 # Check and process input -------------------------------------------------
 
   #### Check samples
-  samplesCheck <- ArgumentCheck::newArgCheck()
 
   # check whether input is provided seperately or as dataframe
   if(is.vector(samples)){
     # check ages
     if(is.na(ages) || !is.vector(ages) || length(ages) != length(samples)){
-      ArgumentCheck::addError(
-        msg = "ages is missing or not a vector with the same length as samples",
-        argcheck =samplesCheck)
+      stop("ages is missing or not a vector with the same length as samples")
       ages = NA
     }
     #check sizes
     if(is.na(sizes) || !is.vector(sizes) || length(sizes) != length(samples)){
-      ArgumentCheck::addError(
-        msg = "sizes is missing or not a vector with the same length as samples",
-        argcheck =samplesCheck)
+      stop("sizes is missing or not a vector with the same length as samples")
       sizes = NA
     }
     #check weights
     #set weights to 1 if not provided
     if(length(weights) == 1 && sum(is.na(weights))==1){
       weights <- 1
-      ArgumentCheck::addWarning(
-        msg = "Equal weights assumed",
-        argcheck = samplesCheck)
+      warning("Equal weights assumed")
     }
     else if( !is.vector(weights) || length(weights) != length(samples) ){
-      ArgumentCheck::addError(
-        msg = "weights not a vector with the same length as samples, all weights set to 1",
-        argcheck =samplesCheck)
+      warning("weights not a vector with the same length as samples, all weights set to 1")
       weights <- 1
     }
     #combine into dataset
@@ -85,14 +75,10 @@ minLL_structure <- function(samples, ages=NA, sizes=NA, weights=NA, initpars, mo
   else if(is.data.frame(samples) && ncol(samples) == 3){
     names(samples) <- c("timepoints","ages","sizes")
     samples$weights <- 1
-    ArgumentCheck::addWarning(
-      msg = "Equal weights assumed",
-      argcheck = samplesCheck)
+    warning("Equal weights assumed")
   }
   else if(!is.data.frame(samples) || ncol(samples) != 4){
-    ArgumentCheck::addError(
-      msg = "Samples is not a vector with timepoints or a dataframe with 3 or 4 four columns containing timepoints, ages, sizes and (optional) weights",
-      argcheck = samplesCheck)
+    stop("Samples is not a vector with timepoints or a dataframe with 3 or 4 four columns containing timepoints, ages, sizes and (optional) weights")
     samples = data.frame(timepoints = NA, ages = NA, sizes=NA, weights = NA)
   }
 
@@ -104,17 +90,11 @@ minLL_structure <- function(samples, ages=NA, sizes=NA, weights=NA, initpars, mo
 
   # Select complete cases
   if(sum(complete.cases(samples)) == 0 ){
-    ArgumentCheck::addError(
-      msg = paste("Incomplete observations removed.", as.character(sum(complete.cases(samples))), "observations remaining."),
-      argcheck = samplesCheck
-    )
+    stop(paste("Incomplete observations removed.", as.character(sum(complete.cases(samples))), "observations remaining."))
     samples <- samples[complete.cases(samples),]
   }
   else if(sum(complete.cases(samples)) != nrow(samples) ){
-    ArgumentCheck::addWarning(
-      msg = paste("Incomplete observations removed.", as.character(sum(complete.cases(samples))), "observations remaining."),
-      argcheck = samplesCheck
-    )
+    warning(paste("Incomplete observations removed.", as.character(sum(complete.cases(samples))), "observations remaining."))
     samples <- samples[complete.cases(samples),]
   }
 
@@ -126,35 +106,25 @@ minLL_structure <- function(samples, ages=NA, sizes=NA, weights=NA, initpars, mo
   nobs <-  nrow(samples)
 
   if(ntime <= 1){
-    ArgumentCheck::addError(
-      msg = "The dataset should contain more than 1 timepoint with complete data",
-      argcheck = inputCheck)
+    stop("The dataset should contain more than 1 timepoint with complete data")
   }
 
   if(nages <= 1){
-    ArgumentCheck::addError(
-      msg = "The dataset should contain more than 1 ageclass with complete data",
-      argcheck = inputCheck)
+    stop( "The dataset should contain more than 1 ageclass with complete data")
   }
 
-  ArgumentCheck::finishArgCheck(samplesCheck)
 
   #### Check other input
-  inputCheck <- ArgumentCheck::newArgCheck()
 
   # check modeltype
   if(model != "CONS" && model != "VARY" && model != "BOTH"){
-    ArgumentCheck::addWarning(
-      msg = "model is not one of 'CONS', 'VARY' or 'BOTH', and is reset to default: 'BOTH'",
-      argcheck = inputCheck)
+    warning("model is not one of 'CONS', 'VARY' or 'BOTH', and is reset to default: 'BOTH'")
     model = "BOTH"
   }
 
   # check shrink
   if( shrink !=TRUE && shrink !=FALSE ){
-    ArgumentCheck::addWarning(
-      msg = "shrink should be TRUE or FALSE, set to TRUE",
-      argcheck = inputCheck)
+    warning("shrink should be TRUE or FALSE, set to TRUE")
     shrink = TRUE
   }
   # convert shrink to integer
@@ -163,9 +133,7 @@ minLL_structure <- function(samples, ages=NA, sizes=NA, weights=NA, initpars, mo
 
   # check logscale
   if( logscale !=TRUE && logscale !=FALSE ){
-    ArgumentCheck::addWarning(
-      msg = "Logscale should be TRUE or FALSE, set to TRUE",
-      argcheck = inputCheck)
+    warning("Logscale should be TRUE or FALSE, set to TRUE")
     logscale = TRUE
   }
   #convert logscale to integer
@@ -177,9 +145,7 @@ minLL_structure <- function(samples, ages=NA, sizes=NA, weights=NA, initpars, mo
   else if( feedinggroups == "AGE") grouppar = 1
   else if( feedinggroups == "SIZE") grouppar = 2
   else{
-    ArgumentCheck::addWarning(
-      msg = "Feedinggroups is not one of 'AGE' or 'SIZE' and is ignored",
-      argcheck = inputCheck)
+    warning( "Feedinggroups is not one of 'AGE' or 'SIZE' and is ignored")
     grouppar = 0
   }
 
@@ -188,16 +154,12 @@ minLL_structure <- function(samples, ages=NA, sizes=NA, weights=NA, initpars, mo
     feedingbounds <- unique(feedingbounds[!is.na(feedingbounds)])
     ngroups <- length(feedingbounds)+1
     if(ngroups == 1){
-      ArgumentCheck::addWarning(
-        msg = "No correct boundaries for feedinggroups found. Feedinggroups ignored",
-        argcheck = inputCheck)
+      warning("No correct boundaries for feedinggroups found. Feedinggroups ignored")
       grouppar = 0
       feedingbounds = 0
     }
     else{
-      ArgumentCheck::addWarning(
-        msg = paste(as.character(ngroups-1),"unique boundaries of feedinggroups found, continuing with",as.character(ngroups),"feedinggroups"),
-        argcheck = inputCheck)
+      message(paste(as.character(ngroups-1),"unique boundaries of feedinggroups found, continuing with",as.character(ngroups),"feedinggroups"))
     }
   }
   else{
@@ -210,34 +172,24 @@ minLL_structure <- function(samples, ages=NA, sizes=NA, weights=NA, initpars, mo
   npars <- length(initpars)
 
   if(anyNA(initpars)){
-    ArgumentCheck::addError(
-      msg = "NA values are not allowed in initpars",
-      argcheck = inputCheck)
+    stop( "NA values are not allowed in initpars")
   }
   else if(sum(initpars <= 0) && logpar==1){
-    ArgumentCheck::addError(
-      msg = paste("initpars may not contain values <= 0 if parameters are logtrasformed (logscale=TRUE)"),
-      argcheck = inputCheck)
+    stop( paste("initpars may not contain values <= 0 if parameters are logtrasformed (logscale=TRUE)"))
   }
   else if(npars == 2*ngroups + 2*ntime + 2*(nages-1) + 1  && model != "CONS"){
-    ArgumentCheck::addWarning(
-      msg = "Model set to 'CONS' based on length of initpars",
-      argcheck = inputCheck)
+    warning("Model set to 'CONS' based on length of initpars")
     model = "CONS"
   }
   else if(npars == 2*(ntime-1)*ngroups + 2*ntime + 2*(nages-1) + 1 && model != "VARY"){
-    ArgumentCheck::addWarning(
-      msg = "Model set to 'VARY' based on length of initpars",
-      argcheck = inputCheck)
+    warning("Model set to 'VARY' based on length of initpars")
     model = "VARY"
   }
   else if( npars != 5 ){
-    ArgumentCheck::addError(
-      msg = "Size of initpars is incorrect. Initpars should be a vector of length 5 or a vector as produced by 'makepoppars()'",
-      argcheck = inputCheck)
+    stop(
+      msg = "Size of initpars is incorrect. Initpars should be a vector of length 5 or a vector as produced by 'makepoppars()'")
   }
 
-  ArgumentCheck::finishArgCheck(inputCheck)
 
   initpars_short <- initpars
 
